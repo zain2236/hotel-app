@@ -3,30 +3,28 @@
       <nav id="sidebar">
         <!-- Sidebar Header-->
         <div class="sidebar-header d-flex align-items-center">
-          <div class="avatar"><img src="admin/img/avatar-6.jpg" alt="..." class="img-fluid rounded-circle"></div>
+          <div class="avatar"><img src="{{ asset('admin/img/avatar-6.jpg') }}" alt="..." class="img-fluid rounded-circle"></div>
           <div class="title">
-            <h1 class="h5">Mark Stephen</h1>
-            <p>Web Designer</p>
+            <h1 class="h5">{{ Auth::user()->name }}</h1>
+            <p>Administrator</p>
           </div>
         </div>
         <!-- Sidebar Navidation Menus--><span class="heading">Main</span>
         <ul class="list-unstyled">
-                <li class="active"><a href="index.html"> <i class="icon-home"></i>Home </a></li>
-                <li><a href="tables.html"> <i class="icon-grid"></i>Tables </a></li>
-                <li><a href="charts.html"> <i class="fa fa-bar-chart"></i>Charts </a></li>
-                <li><a href="forms.html"> <i class="icon-padnote"></i>Forms </a></li>
-                <li><a href="#exampledropdownDropdown" aria-expanded="false" data-toggle="collapse"> <i class="icon-windows"></i>Example dropdown </a>
-                  <ul id="exampledropdownDropdown" class="collapse list-unstyled ">
-                    <li><a href="#">Page</a></li>
-                    <li><a href="#">Page</a></li>
-                    <li><a href="#">Page</a></li>
-                  </ul>
-                </li>
-                <li><a href="login.html"> <i class="icon-logout"></i>Login page </a></li>
-        </ul><span class="heading">Extras</span>
+                <li class="{{ request()->routeIs('home') ? 'active' : '' }}"><a href="{{ route('home') }}"> <i class="icon-home"></i>Dashboard </a></li>
+                <li class="{{ request()->routeIs('admin.rooms.*') ? 'active' : '' }}"><a href="{{ route('admin.rooms.index') }}"> <i class="icon-grid"></i>Rooms </a></li>
+                <li class="{{ request()->routeIs('admin.bookings.*') ? 'active' : '' }}"><a href="{{ route('admin.bookings.index') }}"> <i class="icon-padnote"></i>Bookings </a></li>
+        </ul><span class="heading">Actions</span>
         <ul class="list-unstyled">
-          <li> <a href="#"> <i class="icon-settings"></i>Demo </a></li>
-          <li> <a href="#"> <i class="icon-writing-whiteboard"></i>Demo </a></li>
-          <li> <a href="#"> <i class="icon-chart"></i>Demo </a></li>
+          <li><a href="{{ route('admin.rooms.create') }}"> <i class="icon-plus"></i>Add Room </a></li>
+          <li><a href="{{ route('homepage') }}" target="_blank"> <i class="icon-screen"></i>View Website </a></li>
+          <li>
+            <form method="POST" action="{{ route('logout') }}">
+              @csrf
+              <button type="submit" style="background: none; border: none; color: inherit; width: 100%; text-align: left; padding: 0;">
+                <i class="icon-logout"></i>Logout
+              </button>
+            </form>
+          </li>
         </ul>
       </nav>
