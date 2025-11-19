@@ -28,5 +28,16 @@ class AppServiceProvider extends ServiceProvider
         Route::bind('room', function ($value) {
             return \App\Models\Room::findOrFail($value);
         });
+        
+        // Register custom Fortify response classes
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\LoginResponse::class,
+            \App\Actions\Fortify\AuthenticatedLoginResponse::class
+        );
+        
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\RegisterResponse::class,
+            \App\Actions\Fortify\AuthenticatedRegisterResponse::class
+        );
     }
 }

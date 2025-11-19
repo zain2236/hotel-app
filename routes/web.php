@@ -9,6 +9,7 @@ use App\Http\Controllers\BookingController;
 // Public routes
 Route::get('/', [AdminController::class, 'home'])->name('homepage');
 Route::get('/rooms', [RoomController::class, 'publicIndex'])->name('rooms.public');
+Route::post('/contact', [AdminController::class, 'contact'])->name('contact.send');
 
 // Room detail and booking (must be before admin routes to avoid conflicts)
 Route::get('/room/{id}', [RoomController::class, 'show'])->name('room.show');

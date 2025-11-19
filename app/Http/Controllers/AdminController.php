@@ -62,4 +62,19 @@ class AdminController extends Controller
         $rooms = Room::where('available', true)->latest()->take(6)->get();
         return view('home.index', compact('rooms'));
     }
+
+    public function contact(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string|max:2000',
+        ]);
+
+        // Here you can add email sending logic or save to database
+        // For now, we'll just return success message
+        
+        return redirect()->route('homepage')->with('success', 'Thank you! Your message has been sent successfully. We will get back to you soon.');
+    }
 }

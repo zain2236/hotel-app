@@ -144,11 +144,11 @@
             <a class="navbar-brand" href="{{ route('homepage') }}">
                <i class="fas fa-hotel me-2"></i>Luxury Hotel
             </a>
-            <div class="ms-auto">
+            <div class="ms-auto d-flex align-items-center gap-2">
                @auth
-                  <a href="{{ route('home') }}" class="btn btn-outline-primary me-2">Dashboard</a>
+                  <a href="{{ route('home') }}" class="btn btn-outline-primary">Dashboard</a>
                @else
-                  <a href="{{ route('login') }}" class="btn btn-outline-primary me-2">Login</a>
+                  <a href="{{ route('login') }}" class="btn btn-outline-primary">Login</a>
                   <a href="{{ route('register') }}" class="btn btn-primary">Register</a>
                @endauth
             </div>
@@ -303,6 +303,8 @@
          </div>
       </div>
 
+      @include('components.toast')
+
       <!-- Bootstrap JS -->
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
       <script>
@@ -348,6 +350,15 @@
          
          // Initial calculation if dates are pre-filled
          calculateTotal();
+         
+         // Initialize toasts
+         document.addEventListener('DOMContentLoaded', function() {
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(function(toastEl) {
+               const toast = new bootstrap.Toast(toastEl);
+               toast.show();
+            });
+         });
       </script>
    </body>
 </html>
