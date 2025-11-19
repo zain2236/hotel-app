@@ -6,7 +6,7 @@
                 <div class="full">
                     <div class="center-desk">
                         <div class="logo">
-                            <a href="index.html"><img src="images/logo.png" alt="#" /></a>
+                            <a href="{{ route('homepage') }}"><img src="{{ asset('images/logo.png') }}" alt="Logo" /></a>
                         </div>
                     </div>
                 </div>
@@ -18,50 +18,45 @@
                     </button>
                     <div class="collapse navbar-collapse" id="navbarsExample04">
                         <ul class="navbar-nav mr-auto">
-                            <li class="nav-item active">
-                                <a class="nav-link" href="index.html">Home</a>
+                            <li class="nav-item {{ request()->routeIs('homepage') ? 'active' : '' }}">
+                                <a class="nav-link" href="{{ route('homepage') }}">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="about.html">About</a>
+                                <a class="nav-link" href="#about">About</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="room.html">Our room</a>
+                                <a class="nav-link" href="{{ route('rooms.public') }}">Our Rooms</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="gallery.html">Gallery</a>
+                                <a class="nav-link" href="#gallery">Gallery</a>
                             </li>
-                            
                             <li class="nav-item">
-                                <a class="nav-link" href="contact.html">Contact Us</a>
+                                <a class="nav-link" href="#contact">Contact Us</a>
                             </li>
-
-                            @if (Route::has('login'))
-                                @auth
-
-                                <x-app-layout>
-   
-                                 </x-app-layout>
-
+                        </ul>
+                        <ul class="navbar-nav ml-auto">
+                            @auth
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('home') }}">Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-link nav-link" style="border: none; background: none; color: inherit;">
+                                            Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            @else
+                                <li class="nav-item" style="padding-right: 10px;">
+                                    <a class="btn btn-success" href="{{ route('login') }}">Login</a>
+                                </li>
+                                @if (Route::has('register'))
                                     <li class="nav-item">
-                                        <a
-                                            href="{{ url('/home') }}"
-                                            class="inline-block px-5 py-1.5 border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] rounded-sm text-sm leading-normal"
-                                        >
-                                            Dashboard
-                                        </a>
+                                        <a class="btn btn-primary" href="{{ route('register') }}">Register</a>
                                     </li>
-                                @else
-                                    <li class="nav-item" style="padding-right: 10px;">
-                                        <a class="btn btn-success" href="{{ url('login') }}">Login</a>
-                                    </li>
-
-                                    @if (Route::has('register'))
-                                        <li class="nav-item">
-                                            <a class="btn btn-primary" href="{{ url('register') }}">REGISTER</a>
-                                        </li>
-                                    @endif
-                                @endauth
-                            @endif
+                                @endif
+                            @endauth
                         </ul>
                     </div>
                 </nav>
