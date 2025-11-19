@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../api"
+		},
+		{
+			"path": "../auth"
+		},
+		{
+			"path": "../components"
+		},
+		{
+			"path": "../emails"
+		},
+		{
+			"path": "../home"
+		},
+		{
+			"path": "../layouts"
+		},
+		{
+			"path": "../profile"
+		}
+	],
+	"settings": {}
+}
