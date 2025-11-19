@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Rooms Management - Admin</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -42,16 +43,21 @@
             color: white;
         }
         
+        .sidebar-header h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
         .sidebar-menu {
             padding: 1rem 0;
         }
         
         .menu-item {
+            display: flex;
+            align-items: center;
             padding: 0.75rem 1.5rem;
             color: var(--dark-color);
             text-decoration: none;
-            display: flex;
-            align-items: center;
             transition: all 0.3s;
             border-left: 3px solid transparent;
         }
@@ -78,9 +84,6 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
             border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         
         .card {
@@ -89,29 +92,63 @@
             box-shadow: 0 5px 20px rgba(0,0,0,0.08);
         }
         
-        .card-header {
-            background: white;
-            border-bottom: 2px solid #f3f4f6;
-            padding: 1.5rem;
-            border-radius: 15px 15px 0 0;
-        }
-        
         .room-image {
-            width: 100px;
-            height: 70px;
+            width: 80px;
+            height: 60px;
             object-fit: cover;
             border-radius: 8px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .room-image-placeholder {
+            width: 80px;
+            height: 60px;
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e5e7eb;
+            color: #9ca3af;
+            font-size: 1.5rem;
+        }
+        
+        .room-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .room-image-container {
+            width: 80px;
+            height: 60px;
+            flex-shrink: 0;
         }
         
         .btn {
             border-radius: 8px;
             padding: 0.5rem 1rem;
             font-weight: 500;
+            transition: all 0.3s;
         }
         
-        .badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.875rem;
+        }
+        
+        .d-flex.gap-2 {
+            gap: 0.5rem;
         }
     </style>
 </head>
@@ -134,11 +171,11 @@
             <a href="{{ route('admin.rooms.create') }}" class="menu-item">
                 <i class="fas fa-plus-circle"></i> Add Room
             </a>
-            <a href="{{ route('homepage') }}" target="_blank" class="menu-item">
+            <a href="{{ url('/') }}" target="_blank" class="menu-item">
                 <i class="fas fa-external-link-alt"></i> View Website
             </a>
             <hr>
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ url('/logout') }}">
                 @csrf
                 <button type="submit" class="menu-item w-100 text-start border-0 bg-transparent">
                     <i class="fas fa-sign-out-alt"></i> Logout
@@ -155,12 +192,8 @@
             </a>
         </div>
         
-        @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        @endif
+        @include('components.toast')
+        @include('components.confirm-modal')
         
         <div class="card">
             <div class="card-header">
@@ -184,8 +217,19 @@
                             @forelse($rooms as $room)
                             <tr>
                                 <td>
-                                    <img src="{{ $room->image ? asset('storage/' . $room->image) : asset('images/room1.jpg') }}" 
-                                         alt="{{ $room->title }}" class="room-image">
+                                    <div class="room-image-container">
+                                        @if($room->image && file_exists(storage_path('app/public/' . $room->image)))
+                                            <div class="room-image">
+                                                <img src="{{ asset('storage/' . $room->image) }}" 
+                                                     alt="{{ $room->title }}"
+                                                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'room-image-placeholder\'><i class=\'fas fa-image\'></i></div>';">
+                                            </div>
+                                        @else
+                                            <div class="room-image-placeholder">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td><strong>{{ $room->title }}</strong></td>
                                 <td>{{ ucfirst($room->room_type) }}</td>
@@ -197,23 +241,25 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ route('admin.rooms.edit', $room->id) }}" class="btn btn-sm btn-warning">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ route('admin.rooms.destroy', $room->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this room?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ route('admin.rooms.edit', $room->id) }}" class="btn btn-sm btn-warning" title="Edit Room">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ route('admin.rooms.destroy', $room->id) }}" method="POST" class="d-inline" data-confirm="Are you sure you want to delete this room? This action cannot be undone." data-title="Delete Room">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Delete Room">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
                             <tr>
                                 <td colspan="7" class="text-center text-muted py-4">
                                     <i class="fas fa-bed fa-2x mb-2"></i><br>
-                                    No rooms found. <a href="{{ route('admin.rooms.create') }}">Create one now</a>
+                                    No rooms found
                                 </td>
                             </tr>
                             @endforelse
@@ -228,5 +274,15 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize toasts
+        document.addEventListener('DOMContentLoaded', function() {
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(function(toastEl) {
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            });
+        });
+    </script>
 </body>
 </html>

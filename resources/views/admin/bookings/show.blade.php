@@ -124,11 +124,11 @@
             <a href="{{ route('admin.rooms.create') }}" class="menu-item">
                 <i class="fas fa-plus-circle"></i> Add Room
             </a>
-            <a href="{{ route('homepage') }}" target="_blank" class="menu-item">
+            <a href="{{ url('/') }}" target="_blank" class="menu-item">
                 <i class="fas fa-external-link-alt"></i> View Website
             </a>
             <hr>
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ url('/logout') }}">
                 @csrf
                 <button type="submit" class="menu-item w-100 text-start border-0 bg-transparent">
                     <i class="fas fa-sign-out-alt"></i> Logout
@@ -229,14 +229,14 @@
                     <div class="card-body">
                         <h5 class="mb-3">Actions</h5>
                         @if($booking->status == 'pending')
-                        <form action="{{ route('admin.bookings.update', $booking->id) }}" method="POST" class="mb-2">
+                        <form action="{{ route('admin.bookings.update', $booking->id) }}" method="POST" class="mb-2" data-confirm="Are you sure you want to approve this booking?" data-title="Approve Booking">
                             @csrf
                             @method('PUT')
                             <input type="hidden" name="status" value="confirmed">
                             <input type="hidden" name="check_in" value="{{ $booking->check_in->format('Y-m-d') }}">
                             <input type="hidden" name="check_out" value="{{ $booking->check_out->format('Y-m-d') }}">
                             <input type="hidden" name="guests" value="{{ $booking->guests }}">
-                            <button type="submit" class="btn btn-success w-100 mb-2" onclick="return confirm('Approve this booking?');">
+                            <button type="submit" class="btn btn-success w-100 mb-2">
                                 <i class="fas fa-check-circle me-2"></i>Approve Booking
                             </button>
                         </form>
@@ -251,8 +251,21 @@
                 </div>
             </div>
         </div>
+        
+        @include('components.toast')
+        @include('components.confirm-modal')
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize toasts
+        document.addEventListener('DOMContentLoaded', function() {
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(function(toastEl) {
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            });
+        });
+    </script>
 </body>
 </html>

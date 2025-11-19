@@ -204,11 +204,11 @@
             <a href="{{ route('admin.rooms.create') }}" class="menu-item">
                 <i class="fas fa-plus-circle"></i> Add Room
             </a>
-            <a href="{{ route('homepage') }}" target="_blank" class="menu-item">
+            <a href="{{ url('/') }}" target="_blank" class="menu-item">
                 <i class="fas fa-external-link-alt"></i> View Website
             </a>
             <hr>
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ url('/logout') }}">
                 @csrf
                 <button type="submit" class="menu-item w-100 text-start border-0 bg-transparent">
                     <i class="fas fa-sign-out-alt"></i> Logout
@@ -226,12 +226,8 @@
             </div>
         </div>
         
-        @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        @endif
+        @include('components.toast')
+        @include('components.confirm-modal')
         
         <!-- Statistics -->
         <div class="row">
@@ -297,31 +293,31 @@
                             @forelse($recentBookings as $booking)
                             <tr>
                                 <td>#{{ $booking->id }}</td>
-                                <td>{{ $booking->room->title }}</td>
-                                <td>{{ $booking->guest_name }}</td>
-                                <td>{{ $booking->check_in->format('M d, Y') }}</td>
-                                <td>{{ $booking->check_out->format('M d, Y') }}</td>
-                                <td><strong>${{ number_format($booking->total_price, 2) }}</strong></td>
+                                <td>{{ $booking->room ? $booking->room->title : 'N/A' }}</td>
+                                <td>{{ $booking->guest_name ?? ($booking->user ? $booking->user->name : 'Guest') }}</td>
+                                <td>{{ $booking->check_in ? $booking->check_in->format('M d, Y') : 'N/A' }}</td>
+                                <td>{{ $booking->check_out ? $booking->check_out->format('M d, Y') : 'N/A' }}</td>
+                                <td><strong>${{ number_format($booking->total_price ?? 0, 2) }}</strong></td>
                                 <td>
                                     <span class="badge bg-{{ $booking->status == 'confirmed' ? 'success' : ($booking->status == 'pending' ? 'warning' : 'danger') }}">
-                                        {{ ucfirst($booking->status) }}
+                                        {{ ucfirst($booking->status ?? 'pending') }}
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ route('admin.bookings.show', $booking->id) }}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-eye"></i> View
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ route('admin.bookings.show', $booking->id) }}" class="btn btn-sm btn-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
                                         </a>
                                         @if($booking->status == 'pending')
-                                        <form action="{{ route('admin.bookings.update', $booking->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('admin.bookings.update', $booking->id) }}" method="POST" class="d-inline" data-confirm="Are you sure you want to approve this booking?" data-title="Approve Booking">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="status" value="confirmed">
-                                            <input type="hidden" name="check_in" value="{{ $booking->check_in->format('Y-m-d') }}">
-                                            <input type="hidden" name="check_out" value="{{ $booking->check_out->format('Y-m-d') }}">
-                                            <input type="hidden" name="guests" value="{{ $booking->guests }}">
-                                            <button type="submit" class="btn btn-sm btn-success" title="Approve" onclick="return confirm('Approve this booking?');">
-                                                <i class="fas fa-check"></i> Approve
+                                            <input type="hidden" name="check_in" value="{{ $booking->check_in ? $booking->check_in->format('Y-m-d') : '' }}">
+                                            <input type="hidden" name="check_out" value="{{ $booking->check_out ? $booking->check_out->format('Y-m-d') : '' }}">
+                                            <input type="hidden" name="guests" value="{{ $booking->guests ?? 1 }}">
+                                            <button type="submit" class="btn btn-sm btn-success" title="Approve Booking">
+                                                <i class="fas fa-check"></i>
                                             </button>
                                         </form>
                                         @endif
@@ -345,5 +341,15 @@
     
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+    <script>
+        // Initialize toasts
+        document.addEventListener('DOMContentLoaded', function() {
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(function(toastEl) {
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            });
+        });
+    </script>
+</body>
 </html>

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Route;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Explicitly set route model binding to use 'id' for bookings and rooms
+        Route::bind('booking', function ($value) {
+            return \App\Models\Booking::findOrFail($value);
+        });
+        
+        Route::bind('room', function ($value) {
+            return \App\Models\Room::findOrFail($value);
+        });
     }
 }

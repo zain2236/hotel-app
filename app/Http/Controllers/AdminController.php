@@ -42,7 +42,14 @@ class AdminController extends Controller
                 'total_revenue' => Booking::where('status', 'confirmed')->sum('total_price'),
             ];
             
-            $recentBookings = Booking::with(['room', 'user'])->latest()->take(5)->get();
+            try {
+                $recentBookings = Booking::with(['room', 'user'])
+                    ->latest()
+                    ->take(5)
+                    ->get();
+            } catch (\Exception $e) {
+                $recentBookings = collect([]); // Empty collection if there's an error
+            }
             
             return view('admin.index', compact('stats', 'recentBookings'));
         } else {

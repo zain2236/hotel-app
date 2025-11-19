@@ -125,11 +125,11 @@
             <a href="{{ route('admin.rooms.create') }}" class="menu-item">
                 <i class="fas fa-plus-circle"></i> Add Room
             </a>
-            <a href="{{ route('homepage') }}" target="_blank" class="menu-item">
+            <a href="{{ url('/') }}" target="_blank" class="menu-item">
                 <i class="fas fa-external-link-alt"></i> View Website
             </a>
             <hr>
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ url('/logout') }}">
                 @csrf
                 <button type="submit" class="menu-item w-100 text-start border-0 bg-transparent">
                     <i class="fas fa-sign-out-alt"></i> Logout
@@ -143,12 +143,8 @@
             <h2 class="mb-0">Bookings Management</h2>
         </div>
         
-        @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        @endif
+        @include('components.toast')
+        @include('components.confirm-modal')
         
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -192,22 +188,22 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ route('admin.bookings.show', $booking->id) }}" class="btn btn-sm btn-primary" title="View">
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ route('admin.bookings.show', $booking->id) }}" class="btn btn-sm btn-primary" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('admin.bookings.edit', $booking->id) }}" class="btn btn-sm btn-warning" title="Edit">
+                                        <a href="{{ route('admin.bookings.edit', $booking->id) }}" class="btn btn-sm btn-warning" title="Edit Booking">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         @if($booking->status == 'pending')
-                                        <form action="{{ route('admin.bookings.update', $booking->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('admin.bookings.update', $booking->id) }}" method="POST" class="d-inline" data-confirm="Are you sure you want to approve this booking?" data-title="Approve Booking">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="status" value="confirmed">
                                             <input type="hidden" name="check_in" value="{{ $booking->check_in->format('Y-m-d') }}">
                                             <input type="hidden" name="check_out" value="{{ $booking->check_out->format('Y-m-d') }}">
                                             <input type="hidden" name="guests" value="{{ $booking->guests }}">
-                                            <button type="submit" class="btn btn-sm btn-success" title="Approve" onclick="return confirm('Approve this booking?');">
+                                            <button type="submit" class="btn btn-sm btn-success" title="Approve Booking">
                                                 <i class="fas fa-check"></i>
                                             </button>
                                         </form>
@@ -234,5 +230,15 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize toasts
+        document.addEventListener('DOMContentLoaded', function() {
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(function(toastEl) {
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            });
+        });
+    </script>
 </body>
 </html>

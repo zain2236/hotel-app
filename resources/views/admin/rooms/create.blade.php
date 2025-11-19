@@ -128,11 +128,11 @@
             <a href="{{ route('admin.rooms.create') }}" class="menu-item active">
                 <i class="fas fa-plus-circle"></i> Add Room
             </a>
-            <a href="{{ route('homepage') }}" target="_blank" class="menu-item">
+            <a href="{{ url('/') }}" target="_blank" class="menu-item">
                 <i class="fas fa-external-link-alt"></i> View Website
             </a>
             <hr>
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ url('/logout') }}">
                 @csrf
                 <button type="submit" class="menu-item w-100 text-start border-0 bg-transparent">
                     <i class="fas fa-sign-out-alt"></i> Logout
@@ -145,6 +145,9 @@
         <div class="topbar">
             <h2 class="mb-0">Add New Room</h2>
         </div>
+        
+        @include('components.toast')
+        @include('components.confirm-modal')
         
         <div class="card">
             <div class="card-header">
@@ -252,6 +255,19 @@
         </div>
     </div>
     
+    @include('components.toast')
+    @include('components.confirm-modal')
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize toasts
+        document.addEventListener('DOMContentLoaded', function() {
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(function(toastEl) {
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            });
+        });
+    </script>
 </body>
 </html>

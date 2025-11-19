@@ -103,8 +103,20 @@ class BookingController extends Controller
      */
     public function show($id)
     {
-        $booking = Booking::with(['room', 'user'])->findOrFail($id);
-        return view('admin.bookings.show', compact('booking'));
+        // Ensure user is admin (double check)
+        if (!Auth::check() || Auth::user()->usertype !== 'admin') {
+            abort(403, 'Unauthorized. Admin access required.');
+        }
+        
+        try {
+            $booking = Booking::with(['room', 'user'])->findOrFail($id);
+            return view('admin.bookings.show', compact('booking'));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'Booking not found.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.bookings.index')
+                ->with('error', 'Error loading booking: ' . $e->getMessage());
+        }
     }
 
     /**

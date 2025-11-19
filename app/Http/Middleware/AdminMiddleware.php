@@ -17,11 +17,31 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if (!Auth::check()) {
-            return redirect()->route('login');
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+            // Redirect to login with a message
+            return redirect()->route('login')->with('error', 'Please login to access admin panel.');
         }
 
-        if (Auth::user()->usertype !== 'admin') {
-            abort(403, 'Unauthorized access.');
+        $user = Auth::user();
+        if (!$user) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'User not found.'], 404);
+            }
+            abort(404, 'User not found.');
+        }
+
+        if ($user->usertype !== 'admin') {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Unauthorized access.',
+                    'your_usertype' => $user->usertype,
+                    'required' => 'admin'
+                ], 403);
+            }
+            // Show helpful error message
+            abort(403, "Unauthorized. Your account type is '{$user->usertype}'. Admin access required. Contact administrator to upgrade your account.");
         }
 
         return $next($request);

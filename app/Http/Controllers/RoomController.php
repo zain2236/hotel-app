@@ -25,6 +25,11 @@ class RoomController extends Controller
      */
     public function create()
     {
+        // Ensure user is admin (double check)
+        if (!Auth::check() || Auth::user()->usertype !== 'admin') {
+            abort(403, 'Unauthorized. Admin access required.');
+        }
+        
         return view('admin.rooms.create');
     }
 
@@ -33,27 +38,33 @@ class RoomController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'capacity' => 'required|integer|min:1',
-            'room_type' => 'required|string|max:255',
-            'available' => 'boolean',
-            'amenities' => 'nullable|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'price' => 'required|numeric|min:0',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'capacity' => 'required|integer|min:1',
+                'room_type' => 'required|string|max:255',
+                'available' => 'boolean',
+                'amenities' => 'nullable|string',
+            ]);
 
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('rooms', 'public');
+            if ($request->hasFile('image')) {
+                $validated['image'] = $request->file('image')->store('rooms', 'public');
+            }
+
+            $validated['available'] = $request->has('available');
+
+            Room::create($validated);
+
+            return redirect()->route('admin.rooms.index')
+                ->with('success', 'Room created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to create room: ' . $e->getMessage());
         }
-
-        $validated['available'] = $request->has('available');
-
-        Room::create($validated);
-
-        return redirect()->route('admin.rooms.index')
-            ->with('success', 'Room created successfully.');
     }
 
     /**
@@ -62,6 +73,13 @@ class RoomController extends Controller
     public function show($id)
     {
         $room = Room::findOrFail($id);
+        
+        // Check if this is an admin request or public request
+        // Admin routes use /admin/rooms/{id}, public uses /room/{id}
+        if (request()->is('admin/rooms/*')) {
+            return view('admin.rooms.show', compact('room'));
+        }
+        
         return view('home.room-detail', compact('room'));
     }
 
