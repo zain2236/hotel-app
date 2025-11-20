@@ -103,6 +103,11 @@ class BookingController extends Controller
      */
     public function show($id)
     {
+        // Ensure this is an admin route request
+        if (!request()->is('admin/bookings/*')) {
+            abort(404, 'Route not found. Admin booking routes must be accessed via /admin/bookings/{id}');
+        }
+        
         // Ensure user is admin (double check)
         if (!Auth::check() || Auth::user()->usertype !== 'admin') {
             abort(403, 'Unauthorized. Admin access required.');

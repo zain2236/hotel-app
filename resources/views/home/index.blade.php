@@ -122,6 +122,12 @@
             z-index: 10;
          }
          
+         .booking-form h4 {
+            color: var(--dark-color);
+            font-weight: 600;
+            font-size: 1.5rem;
+         }
+         
          .form-control, .form-select {
             border-radius: 8px;
             border: 2px solid #e5e7eb;
@@ -362,7 +368,7 @@
                </div>
                <div class="col-lg-6">
                   <div class="booking-form">
-                     <h4 class="mb-4"><i class="fas fa-search me-2"></i>Find Your Room</h4>
+                     <h4 class="mb-4" style="color: var(--dark-color); font-weight: 600;"><i class="fas fa-search me-2"></i>Find Your Room</h4>
                      <form action="{{ route('rooms.public') }}" method="GET">
                         <div class="row g-3">
                            <div class="col-md-6">

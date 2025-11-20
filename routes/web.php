@@ -11,7 +11,9 @@ Route::get('/', [AdminController::class, 'home'])->name('homepage');
 Route::get('/rooms', [RoomController::class, 'publicIndex'])->name('rooms.public');
 
 // Room detail and booking (must be before admin routes to avoid conflicts)
+// Note: Using singular 'room' to avoid conflict with admin 'rooms'
 Route::get('/room/{id}', [RoomController::class, 'show'])->name('room.show');
+// Public booking creation route (for users to book rooms)
 Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store')->middleware('auth');
 Route::get('/booking/success', [BookingController::class, 'success'])->name('bookings.success');
 
@@ -66,15 +68,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('rooms/{id}/edit', [RoomController::class, 'edit'])->name('rooms.edit');
         Route::get('rooms/{id}', [RoomController::class, 'show'])->name('rooms.show');
         Route::put('rooms/{id}', [RoomController::class, 'update'])->name('rooms.update');
+        Route::patch('rooms/{id}', [RoomController::class, 'update']); // Support PATCH as well
         Route::delete('rooms/{id}', [RoomController::class, 'destroy'])->name('rooms.destroy');
         
         // Bookings CRUD - IMPORTANT: Specific routes (create/edit) must come before {id} routes
+        // Order matters: index, create, store, edit, show, update, destroy
         Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');
         Route::get('bookings/create', [BookingController::class, 'create'])->name('bookings.create');
         Route::post('bookings', [BookingController::class, 'store'])->name('bookings.store');
         Route::get('bookings/{id}/edit', [BookingController::class, 'edit'])->name('bookings.edit');
         Route::get('bookings/{id}', [BookingController::class, 'show'])->name('bookings.show');
         Route::put('bookings/{id}', [BookingController::class, 'update'])->name('bookings.update');
+        Route::patch('bookings/{id}', [BookingController::class, 'update'])->name('bookings.update.patch'); // Support PATCH as well
         Route::delete('bookings/{id}', [BookingController::class, 'destroy'])->name('bookings.destroy');
     });
 });
