@@ -128,11 +128,11 @@
             <a href="{{ route('admin.rooms.create') }}" class="menu-item">
                 <i class="fas fa-plus-circle"></i> Add Room
             </a>
-            <a href="{{ url('/') }}" target="_blank" class="menu-item">
+            <a href="{{ route('homepage') }}" target="_blank" class="menu-item">
                 <i class="fas fa-external-link-alt"></i> View Website
             </a>
             <hr>
-            <form method="POST" action="{{ url('/logout') }}">
+            <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="menu-item w-100 text-start border-0 bg-transparent">
                     <i class="fas fa-sign-out-alt"></i> Logout

@@ -43,8 +43,19 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Please login to make a booking.');
+        // Check if this is an admin route request
+        $isAdminRoute = request()->is('admin/bookings*');
+        
+        if ($isAdminRoute) {
+            // Ensure user is admin for admin booking creation
+            if (!Auth::check() || Auth::user()->usertype !== 'admin') {
+                abort(403, 'Unauthorized. Admin access required.');
+            }
+        } else {
+            // Public booking - just need to be authenticated
+            if (!Auth::check()) {
+                return redirect()->route('login')->with('error', 'Please login to make a booking.');
+            }
         }
 
         $validated = $request->validate([
@@ -103,9 +114,15 @@ class BookingController extends Controller
 
         $booking = Booking::create($validated);
 
-        return redirect()->route('bookings.success')
-            ->with('success', 'Booking created successfully. We will confirm shortly.')
-            ->with('booking', $booking->load('room'));
+        // Redirect based on route type
+        if ($isAdminRoute) {
+            return redirect()->route('admin.bookings.index')
+                ->with('success', 'Booking created successfully.');
+        } else {
+            return redirect()->route('bookings.success')
+                ->with('success', 'Booking created successfully. We will confirm shortly.')
+                ->with('booking', $booking->load('room'));
+        }
     }
 
     /**

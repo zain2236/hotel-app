@@ -37,6 +37,14 @@ Route::get('/debug-admin', function() {
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [AdminController::class, 'index'])->name('home');
     
+    // Redirect GET /bookings to admin panel for admins (must be before admin routes)
+    Route::get('/bookings', function() {
+        if (Auth::user()->usertype === 'admin') {
+            return redirect()->route('admin.bookings.index');
+        }
+        abort(404, 'Page not found. Please use the admin panel to view bookings.');
+    });
+    
     // Test route to verify admin access
     Route::get('/test-admin-routes', function() {
         $user = Auth::user();
