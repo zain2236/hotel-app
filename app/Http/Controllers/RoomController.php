@@ -25,6 +25,11 @@ class RoomController extends Controller
      */
     public function create()
     {
+        // Ensure this is an admin route request
+        if (!request()->is('admin/rooms*')) {
+            abort(404, 'Route not found. Admin room routes must be accessed via /admin/rooms');
+        }
+        
         // Ensure user is admin (double check)
         if (!Auth::check() || Auth::user()->usertype !== 'admin') {
             abort(403, 'Unauthorized. Admin access required.');

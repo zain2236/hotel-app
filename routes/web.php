@@ -13,8 +13,10 @@ Route::get('/rooms', [RoomController::class, 'publicIndex'])->name('rooms.public
 // Room detail and booking (must be before admin routes to avoid conflicts)
 // Note: Using singular 'room' to avoid conflict with admin 'rooms'
 Route::get('/room/{id}', [RoomController::class, 'show'])->name('room.show');
+
 // Public booking creation route (for users to book rooms)
-Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store')->middleware('auth');
+// IMPORTANT: This route name must be unique and different from admin routes
+Route::post('/bookings', [BookingController::class, 'store'])->name('public.bookings.store')->middleware('auth');
 Route::get('/booking/success', [BookingController::class, 'success'])->name('bookings.success');
 
 // Authentication routes are handled by Jetstream

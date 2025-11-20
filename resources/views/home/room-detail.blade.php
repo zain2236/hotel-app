@@ -229,7 +229,7 @@
                      </div>
                   @endif
                   
-                  <form action="{{ route('bookings.store') }}" method="POST" id="bookingForm">
+                  <form action="{{ route('public.bookings.store') }}" method="POST" id="bookingForm">
                      @csrf
                      <input type="hidden" name="room_id" value="{{ $room->id }}">
                      
