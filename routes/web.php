@@ -22,17 +22,6 @@ Route::get('/booking/success', [BookingController::class, 'success'])->name('boo
 
 // Authentication routes are handled by Jetstream
 
-// Debug route (remove in production)
-Route::get('/debug-admin', function() {
-    $user = Auth::user();
-    return [
-        'logged_in' => Auth::check(),
-        'user_id' => $user?->id,
-        'usertype' => $user?->usertype,
-        'is_admin' => $user && $user->usertype === 'admin',
-    ];
-})->middleware('auth');
-
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [AdminController::class, 'index'])->name('home');
@@ -43,22 +32,6 @@ Route::middleware(['auth'])->group(function () {
             return redirect()->route('admin.bookings.index');
         }
         abort(404, 'Page not found. Please use the admin panel to view bookings.');
-    });
-    
-    // Test route to verify admin access
-    Route::get('/test-admin-routes', function() {
-        $user = Auth::user();
-        return response()->json([
-            'status' => 'ok',
-            'logged_in' => Auth::check(),
-            'user_id' => $user?->id,
-            'usertype' => $user?->usertype,
-            'is_admin' => $user && $user->usertype === 'admin',
-            'routes' => [
-                'rooms_create' => route('admin.rooms.create'),
-                'bookings_show' => route('admin.bookings.show', 1),
-            ],
-        ]);
     });
     
     // User booking routes
@@ -72,6 +45,11 @@ Route::middleware(['auth'])->group(function () {
     // Admin routes - must be authenticated and have admin role
     // Note: Already inside auth middleware group, only need admin middleware
     Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
+        // Admin Dashboard - redirect /admin to dashboard
+        Route::get('/', function() {
+            return redirect()->route('home');
+        });
+        
         // Rooms CRUD - IMPORTANT: Specific routes (create/edit) must come before {id} routes
         Route::get('rooms', [RoomController::class, 'index'])->name('rooms.index');
         Route::get('rooms/create', [RoomController::class, 'create'])->name('rooms.create');
