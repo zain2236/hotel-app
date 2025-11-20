@@ -15,6 +15,16 @@ class BookingController extends Controller
      */
     public function index()
     {
+        // Ensure this is an admin route request
+        if (!request()->is('admin/bookings*')) {
+            abort(404, 'Route not found. Admin booking routes must be accessed via /admin/bookings');
+        }
+        
+        // Ensure user is admin
+        if (!Auth::check() || Auth::user()->usertype !== 'admin') {
+            abort(403, 'Unauthorized. Admin access required.');
+        }
+        
         $bookings = Booking::with(['room', 'user'])->latest()->paginate(10);
         return view('admin.bookings.index', compact('bookings'));
     }

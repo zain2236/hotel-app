@@ -40,7 +40,7 @@ class AdminMiddleware
                     'required' => 'admin'
                 ], 403);
             }
-            // Show helpful error message
+            // Show helpful error message - use 403 not 404
             abort(403, "Unauthorized. Your account type is '{$user->usertype}'. Admin access required. Contact administrator to upgrade your account.");
         }
 

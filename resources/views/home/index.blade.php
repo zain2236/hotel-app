@@ -122,6 +122,12 @@
             z-index: 10;
          }
          
+         .booking-form h4 {
+            color: var(--dark-color);
+            font-weight: 600;
+            font-size: 1.5rem;
+         }
+         
          .form-control, .form-select {
             border-radius: 8px;
             border: 2px solid #e5e7eb;

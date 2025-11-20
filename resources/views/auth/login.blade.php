@@ -171,7 +171,7 @@
 
                 @session('status')
                     <div class="alert alert-success">
-                        {{ $value }}
+                        <i class="fas fa-check-circle me-2"></i>{{ $value }}
                     </div>
                 @endsession
 
