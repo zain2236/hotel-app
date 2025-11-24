@@ -95,12 +95,10 @@
         .room-image {
             width: 80px;
             height: 60px;
-            object-fit: cover;
             border-radius: 8px;
             background: #f3f4f6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: block;
+            overflow: hidden;
             border: 1px solid #e5e7eb;
         }
         
@@ -122,6 +120,7 @@
             height: 100%;
             object-fit: cover;
             border-radius: 8px;
+            display: block;
         }
         
         .room-image-container {
@@ -218,7 +217,7 @@
                             <tr>
                                 <td>
                                     <div class="room-image-container">
-                                        @if($room->image && file_exists(storage_path('app/public/' . $room->image)))
+                                        @if($room->image)
                                             <div class="room-image">
                                                 <img src="{{ asset('storage/' . $room->image) }}" 
                                                      alt="{{ $room->title }}"

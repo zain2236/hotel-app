@@ -50,6 +50,10 @@ Route::middleware(['auth'])->group(function () {
             return redirect()->route('home');
         });
         
+        // Chart data endpoints
+        Route::get('stats/bookings', [AdminController::class, 'getBookingStats'])->name('stats.bookings');
+        Route::get('stats/revenue', [AdminController::class, 'getRevenueStats'])->name('stats.revenue');
+        
         // Rooms CRUD - IMPORTANT: Specific routes (create/edit) must come before {id} routes
         Route::get('rooms', [RoomController::class, 'index'])->name('rooms.index');
         Route::get('rooms/create', [RoomController::class, 'create'])->name('rooms.create');

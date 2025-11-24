@@ -182,6 +182,25 @@
         .btn-primary:hover {
             background: var(--secondary-color);
         }
+        
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-outline-primary.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .card-body canvas {
+            max-height: 300px;
+        }
+        
+        .period-btn {
+            cursor: pointer;
+        }
     </style>
   </head>
   <body>
@@ -269,6 +288,41 @@
             </div>
         </div>
         
+        <!-- Charts Section -->
+        <div class="row mb-4">
+            <!-- Bookings Chart -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Bookings Overview</h5>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary period-btn active" data-period="week" data-chart="bookings">Week</button>
+                            <button type="button" class="btn btn-outline-primary period-btn" data-period="month" data-chart="bookings">Month</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="bookingsChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Revenue Chart -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Revenue Overview</h5>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary period-btn active" data-period="week" data-chart="revenue">Week</button>
+                            <button type="button" class="btn btn-outline-primary period-btn" data-period="month" data-chart="revenue">Month</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="revenueChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Recent Bookings -->
         <div class="card">
             <div class="card-header">
@@ -341,6 +395,8 @@
     
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
         // Initialize toasts
         document.addEventListener('DOMContentLoaded', function() {
@@ -349,6 +405,165 @@
                 const toast = new bootstrap.Toast(toastEl);
                 toast.show();
             });
+        });
+
+        // Chart instances
+        let bookingsChart = null;
+        let revenueChart = null;
+        let currentBookingsPeriod = 'week';
+        let currentRevenuePeriod = 'week';
+
+        // Chart configurations
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        precision: 0
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        };
+
+        const revenueChartOptions = {
+            ...chartOptions,
+            scales: {
+                ...chartOptions.scales,
+                y: {
+                    ...chartOptions.scales.y,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        };
+
+        // Fetch and render bookings chart
+        async function loadBookingsChart(period = 'week') {
+            try {
+                const response = await fetch(`{{ route('admin.stats.bookings') }}?period=${period}`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('bookingsChart').getContext('2d');
+                
+                if (bookingsChart) {
+                    bookingsChart.destroy();
+                }
+
+                bookingsChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Bookings',
+                            data: data.data,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#2563eb',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: chartOptions
+                });
+            } catch (error) {
+                console.error('Error loading bookings chart:', error);
+            }
+        }
+
+        // Fetch and render revenue chart
+        async function loadRevenueChart(period = 'week') {
+            try {
+                const response = await fetch(`{{ route('admin.stats.revenue') }}?period=${period}`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('revenueChart').getContext('2d');
+                
+                if (revenueChart) {
+                    revenueChart.destroy();
+                }
+
+                revenueChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Revenue',
+                            data: data.data,
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                            borderColor: '#10b981',
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            borderSkipped: false,
+                        }]
+                    },
+                    options: revenueChartOptions
+                });
+            } catch (error) {
+                console.error('Error loading revenue chart:', error);
+            }
+        }
+
+        // Period button click handlers
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const period = this.dataset.period;
+                const chart = this.dataset.chart;
+                
+                // Update button states
+                document.querySelectorAll(`[data-chart="${chart}"]`).forEach(b => {
+                    b.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Load chart with new period
+                if (chart === 'bookings') {
+                    currentBookingsPeriod = period;
+                    loadBookingsChart(period);
+                } else if (chart === 'revenue') {
+                    currentRevenuePeriod = period;
+                    loadRevenueChart(period);
+                }
+            });
+        });
+
+        // Initialize charts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBookingsChart('week');
+            loadRevenueChart('week');
         });
     </script>
 </body>

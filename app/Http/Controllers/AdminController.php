@@ -77,4 +77,98 @@ class AdminController extends Controller
         
         return redirect()->route('homepage')->with('success', 'Thank you! Your message has been sent successfully. We will get back to you soon.');
     }
+
+    /**
+     * Get booking statistics for charts
+     */
+    public function getBookingStats(Request $request)
+    {
+        $period = $request->input('period', 'month'); // 'week' or 'month'
+        
+        if ($period === 'week') {
+            // Get last 12 weeks
+            $data = [];
+            $labels = [];
+            
+            for ($i = 11; $i >= 0; $i--) {
+                $startOfWeek = now()->subWeeks($i)->startOfWeek();
+                $endOfWeek = now()->subWeeks($i)->endOfWeek();
+                
+                $count = Booking::whereBetween('check_in', [$startOfWeek, $endOfWeek])
+                    ->count();
+                
+                $labels[] = $startOfWeek->format('M d');
+                $data[] = $count;
+            }
+        } else {
+            // Get last 12 months
+            $data = [];
+            $labels = [];
+            
+            for ($i = 11; $i >= 0; $i--) {
+                $month = now()->subMonths($i);
+                $startOfMonth = $month->copy()->startOfMonth();
+                $endOfMonth = $month->copy()->endOfMonth();
+                
+                $count = Booking::whereBetween('check_in', [$startOfMonth, $endOfMonth])
+                    ->count();
+                
+                $labels[] = $month->format('M Y');
+                $data[] = $count;
+            }
+        }
+        
+        return response()->json([
+            'labels' => $labels,
+            'data' => $data
+        ]);
+    }
+
+    /**
+     * Get revenue statistics for charts
+     */
+    public function getRevenueStats(Request $request)
+    {
+        $period = $request->input('period', 'month'); // 'week' or 'month'
+        
+        if ($period === 'week') {
+            // Get last 12 weeks
+            $data = [];
+            $labels = [];
+            
+            for ($i = 11; $i >= 0; $i--) {
+                $startOfWeek = now()->subWeeks($i)->startOfWeek();
+                $endOfWeek = now()->subWeeks($i)->endOfWeek();
+                
+                $revenue = Booking::where('status', 'confirmed')
+                    ->whereBetween('check_in', [$startOfWeek, $endOfWeek])
+                    ->sum('total_price');
+                
+                $labels[] = $startOfWeek->format('M d');
+                $data[] = (float) $revenue;
+            }
+        } else {
+            // Get last 12 months
+            $data = [];
+            $labels = [];
+            
+            for ($i = 11; $i >= 0; $i--) {
+                $month = now()->subMonths($i);
+                $startOfMonth = $month->copy()->startOfMonth();
+                $endOfMonth = $month->copy()->endOfMonth();
+                
+                $revenue = Booking::where('status', 'confirmed')
+                    ->whereBetween('check_in', [$startOfMonth, $endOfMonth])
+                    ->sum('total_price');
+                
+                $labels[] = $month->format('M Y');
+                $data[] = (float) $revenue;
+            }
+        }
+        
+        return response()->json([
+            'labels' => $labels,
+            'data' => $data
+        ]);
+    }
 }
