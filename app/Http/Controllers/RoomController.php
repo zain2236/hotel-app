@@ -156,20 +156,24 @@ class RoomController extends Controller
         
         // Filter by check-in/check-out dates
         if ($request->has('check_in') && $request->has('check_out')) {
-            $checkIn = Carbon::parse($request->check_in);
-            $checkOut = Carbon::parse($request->check_out);
+            $checkIn = Carbon::parse($request->check_in)->startOfDay();
+            $checkOut = Carbon::parse($request->check_out)->startOfDay();
             
             // Get room IDs that are booked during this period
-            $bookedRoomIds = Booking::where('status', '!=', 'cancelled')
+            // Two date ranges overlap if: (start1 < end2) AND (end1 > start2)
+            // We only consider active bookings (pending or confirmed, not cancelled)
+            // And only bookings that haven't ended yet (check_out >= today)
+            $today = Carbon::today();
+            
+            $bookedRoomIds = Booking::whereIn('status', ['pending', 'confirmed'])
+                ->where('check_out', '>=', $today) // Only consider bookings that haven't ended
                 ->where(function($q) use ($checkIn, $checkOut) {
-                    $q->whereBetween('check_in', [$checkIn, $checkOut])
-                      ->orWhereBetween('check_out', [$checkIn, $checkOut])
-                      ->orWhere(function($q2) use ($checkIn, $checkOut) {
-                          $q2->where('check_in', '<=', $checkIn)
-                             ->where('check_out', '>=', $checkOut);
-                      });
+                    // Proper overlap detection: (booking_start < search_end) AND (booking_end > search_start)
+                    $q->where('check_in', '<', $checkOut)
+                      ->where('check_out', '>', $checkIn);
                 })
-                ->pluck('room_id');
+                ->pluck('room_id')
+                ->unique();
             
             $query->whereNotIn('id', $bookedRoomIds);
         }
