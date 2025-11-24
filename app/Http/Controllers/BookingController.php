@@ -72,35 +72,28 @@ class BookingController extends Controller
         $room = Room::findOrFail($validated['room_id']);
 
         // Check if room is available for the dates
-        $checkIn = Carbon::parse($validated['check_in']);
-        $checkOut = Carbon::parse($validated['check_out']);
+        $checkIn = Carbon::parse($validated['check_in'])->startOfDay();
+        $checkOut = Carbon::parse($validated['check_out'])->startOfDay();
         $nights = $checkIn->diffInDays($checkOut);
 
         // Check for conflicting bookings
+        // Two date ranges overlap if: (start1 < end2) AND (end1 > start2)
+        // We only consider active bookings (pending or confirmed, not cancelled)
+        // And only bookings that haven't ended yet (check_out >= today)
+        $today = Carbon::today();
+        
         $conflictingBooking = Booking::where('room_id', $room->id)
-            ->where('status', '!=', 'cancelled')
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->where('check_out', '>=', $today) // Only consider bookings that haven't ended
             ->where(function($query) use ($checkIn, $checkOut) {
-                $query->where(function($q) use ($checkIn, $checkOut) {
-                    // Check if new booking overlaps with existing bookings
-                    $q->where(function($q2) use ($checkIn, $checkOut) {
-                        // New check-in is between existing booking dates
-                        $q2->where('check_in', '<=', $checkIn)
-                           ->where('check_out', '>', $checkIn);
-                    })->orWhere(function($q2) use ($checkIn, $checkOut) {
-                        // New check-out is between existing booking dates
-                        $q2->where('check_in', '<', $checkOut)
-                           ->where('check_out', '>=', $checkOut);
-                    })->orWhere(function($q2) use ($checkIn, $checkOut) {
-                        // New booking completely contains existing booking
-                        $q2->where('check_in', '>=', $checkIn)
-                           ->where('check_out', '<=', $checkOut);
-                    });
-                });
+                // Proper overlap detection: (existing_start < new_end) AND (existing_end > new_start)
+                $query->where('check_in', '<', $checkOut)
+                      ->where('check_out', '>', $checkIn);
             })
             ->exists();
 
         if ($conflictingBooking) {
-            return back()->withErrors(['room_id' => 'Room is not available for the selected dates.'])->withInput();
+            return back()->withErrors(['room_id' => 'Room is not available for the selected dates. Please choose different dates.'])->withInput();
         }
 
         // Check capacity
